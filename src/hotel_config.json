@@ -1,0 +1,126 @@
+{
+    "hotel_name": "Luxury Resort & Spa",
+    "description": "A luxurious beachfront resort offering world-class amenities and exceptional service.",
+    "location": {
+        "address": "123 Beach Road",
+        "city": "Paradise Bay",
+        "state": "FL",
+        "country": "USA",
+        "zip": "33123",
+        "coordinates": {
+            "latitude": 26.1224,
+            "longitude": -80.1373
+        }
+    },
+    "contact": {
+        "phone": "+1-555-123-4567",
+        "email": "reservations@luxuryresort.com",
+        "website": "https://luxuryresort.com"
+    },
+    "check_in_time": "15:00",
+    "check_out_time": "11:00",
+    "room_types": [
+        {
+            "type": "standard",
+            "name": "Standard Room",
+            "description": "Comfortable room with garden view",
+            "capacity": {
+                "max_adults": 2,
+                "max_children": 2
+            },
+            "amenities": [
+                "Free Wi-Fi",
+                "Air Conditioning",
+                "TV",
+                "Mini Fridge"
+            ],
+            "base_price": 200.00
+        },
+        {
+            "type": "deluxe",
+            "name": "Deluxe Ocean View",
+            "description": "Spacious room with ocean view",
+            "capacity": {
+                "max_adults": 3,
+                "max_children": 2
+            },
+            "amenities": [
+                "Free Wi-Fi",
+                "Air Conditioning",
+                "TV",
+                "Mini Bar",
+                "Balcony",
+                "Ocean View"
+            ],
+            "base_price": 350.00
+        },
+        {
+            "type": "suite",
+            "name": "Executive Suite",
+            "description": "Luxury suite with separate living area",
+            "capacity": {
+                "max_adults": 4,
+                "max_children": 3
+            },
+            "amenities": [
+                "Free Wi-Fi",
+                "Air Conditioning",
+                "Smart TV",
+                "Full Bar",
+                "Balcony",
+                "Ocean View",
+                "Living Room",
+                "Kitchen"
+            ],
+            "base_price": 500.00
+        }
+    ],
+    "amenities": [
+        {
+            "name": "Swimming Pool",
+            "description": "Outdoor infinity pool with ocean view",
+            "hours": "7:00 - 22:00"
+        },
+        {
+            "name": "Spa",
+            "description": "Full-service spa with massage and treatments",
+            "hours": "9:00 - 20:00"
+        },
+        {
+            "name": "Restaurant",
+            "description": "Fine dining restaurant with ocean view",
+            "hours": "6:30 - 23:00"
+        },
+        {
+            "name": "Fitness Center",
+            "description": "Modern gym with cardio and weight equipment",
+            "hours": "6:00 - 22:00"
+        },
+        {
+            "name": "Beach Access",
+            "description": "Private beach access with loungers",
+            "hours": "24/7"
+        }
+    ],
+    "policies": {
+        "cancellation": {
+            "free_cancellation_hours": 48,
+            "penalty_percentage": 50
+        },
+        "deposit": {
+            "required": true,
+            "percentage": 20
+        },
+        "pets": {
+            "allowed": true,
+            "fee": 50.00,
+            "restrictions": "Dogs under 20 lbs only"
+        }
+    },
+    "payment_methods": [
+        "Visa",
+        "MasterCard",
+        "American Express",
+        "PayPal"
+    ]
+}

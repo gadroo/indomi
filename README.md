@@ -1,72 +1,136 @@
-# AI Agent for Hotel Bookings (LangGraph & LLMs)
+# Hotel Booking AI Agent
 
-We're growing our tech team at Powersmy.biz ([https://powersmy.biz/](https://powersmy.biz/)) and have an exciting paid internship opportunity for students who love solving real-world problems and building impactful products. If you're passionate about conversational AI and ready to build intelligent agents, we want you! 🙌
+An AI-powered hotel booking system that handles reservations through Instagram DMs. Built with OpenAI, LangChain, and FastAPI.
 
-**Stipend:** Rs. 20,000 (Remote) / Rs. 25,000 (On-Site) - Negotiable
+## Features
 
-**Deadline:** 20th June
+- Natural language booking process through Instagram DMs
+- Intelligent conversation management with context awareness
+- Automated booking, rescheduling, and cancellation
+- Hotel information inquiries
+- Secure data storage with JSON persistence
+- Clean, modular, and maintainable code structure
 
-## Challenge Overview
+## Architecture
 
-Build an AI agent using **LangGraph, LangChain, and any LLM of your choice (Gemini, Groq, OpenAI, etc.)** that can handle hotel room bookings, reschedule existing reservations, and answer basic hotel-related questions. The agent must be able to interact with users through Instagram DMs, providing a seamless and context-aware conversational experience. This challenge tests your ability to build, deploy, and manage a sophisticated, stateful AI agent.
+The system follows clean architecture principles and is organized into the following modules:
 
-## Core Functionality
+- `llm/`: LLM client implementations (OpenAI)
+- `models/`: Data models using Pydantic
+- `services/`: Business logic and service layer
+- `storage/`: Data persistence implementations
+- `conversation/`: Conversation flow management
+- `prompts/`: Centralized prompt templates
+- `utils/`: Utility functions and helpers
+- `tests/`: Comprehensive test suite
 
-1.  **Create a conversational AI agent that can:**
-    * **Book a hotel room:** Guide the user through the booking process, collecting necessary details (e.g., check-in/check-out dates, room type, number of guests).
-    * **Reschedule a booking:** Allow users to modify their existing reservation dates.
-    * **Answer hotel-related questions:** Respond to basic queries about the hotel (e.g., amenities, check-in times, location).
-    * **Maintain conversation history:** Keep track of the conversation to provide context-aware and relevant responses.
+## Prerequisites
 
-2.  **Integrate the agent with Instagram:**
-    * Use the **Instagram Graph API** (free to use) to send and receive direct messages.
+- Python 3.9+
+- Instagram Business Account
+- OpenAI API Key
 
-3.  **Manage Data:**
-    * Store reservation data in a lightweight database (e.g., **JSON file or SQLite**).
+## Installation
 
----
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/hotel-booking-ai.git
+   cd hotel-booking-ai
+   ```
 
-## Technical Requirements
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-* **Frameworks:** LangGraph, LangChain
-* **LLM:** Any LLM of your choice (Gemini, Groq, OpenAI, Claude, etc.)
-  * **Note:** If you don't have access to paid LLM APIs, you can use free options like Groq, Gemini Flash models, or other free-tier LLM services
-* **API:** Instagram Graph API
-* **Database:** JSON file or a lightweight database like SQLite.
-* **Error Handling:** Implement robust error handling for API failures and user input issues.
-* **State Management:** The agent must effectively manage conversational state using LangGraph.
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-> **Note:** For this challenge, you can assume any hotel data or API responses as needed. This means you can create mock data for hotel information, room availability, pricing, etc., without needing to integrate with actual hotel APIs.
+4. Copy the environment variables template:
+   ```bash
+   cp .env.example .env
+   ```
 
-## Evaluation Criteria
+5. Update the `.env` file with your credentials:
+   - Add your OpenAI API key
+   - Add your Instagram API credentials
+   - Configure hotel information
 
-* **Functionality:** Does the agent successfully handle booking, rescheduling, and Q&A?
-* **LangGraph Implementation:** Quality and clarity of the state machine graph.
-* **Code Quality:** Organization, readability, and efficiency of your code.
-* **Problem-Solving:** Your creative approach to building the conversational flow.
-* **Documentation:** Clarity of your setup instructions and explanations.
+## Running the Application
 
----
+1. Start the FastAPI server:
+   ```bash
+   uvicorn src.app:app --reload
+   ```
 
-## Submission Guidelines
+2. The API will be available at `http://localhost:8000`
 
-1.  **Fork our challenge repository.**
-2.  **Create a new branch** for your implementation.
-3.  **Include a comprehensive `README.md` with:**
-    * Detailed setup instructions.
-    * An explanation of your agent's architecture.
-    * A justification for your design choices.
-4.  **Provide a LangGraph flow diagram** illustrating the agent's conversational states and transitions.
-5.  **Submit the complete source code** by creating a pull request to our main repository.
+## Testing
 
-## Getting Started
+Run the test suite:
+```bash
+pytest
+```
 
-The Instagram Graph API is free to use for this challenge. You can set up your own developer account and obtain the necessary credentials from the Facebook Developer Portal.
+Run with coverage:
+```bash
+pytest --cov=src tests/
+```
 
-**LLM Options:** If you don't have access to paid LLM APIs, there are several free alternatives available:
-* **Groq** - Fast inference with free tier
-* **Google Gemini Flash** - Free tier available
-* **Hugging Face Inference API** - Free tier for many models
-* **Ollama** - Run open-source models locally
+## Project Structure
 
-For any queries, feel free to email us at founders@powersmy.biz ✉️! 
+```
+hotel-booking-ai/
+├── src/
+│   ├── llm/
+│   │   ├── base.py
+│   │   └── openai_client.py
+│   ├── models/
+│   │   └── booking.py
+│   ├── services/
+│   │   ├── base.py
+│   │   └── booking.py
+│   ├── storage/
+│   │   ├── base.py
+│   │   └── json_storage.py
+│   ├── conversation/
+│   │   └── manager.py
+│   ├── prompts/
+│   │   └── base.py
+│   ├── utils/
+│   │   └── date_parser.py
+│   ├── config.py
+│   └── app.py
+├── tests/
+│   ├── conftest.py
+│   ├── test_app.py
+│   ├── test_booking.py
+│   └── test_conversation.py
+├── .env.example
+├── requirements.txt
+└── README.md
+```
+
+## API Endpoints
+
+- `POST /webhook`: Instagram webhook endpoint
+- `GET /bookings`: List all bookings
+- `GET /bookings/{id}`: Get booking details
+- `POST /bookings`: Create a new booking
+- `PUT /bookings/{id}`: Update a booking
+- `DELETE /bookings/{id}`: Cancel a booking
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 
