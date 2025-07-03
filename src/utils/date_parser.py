@@ -1,118 +1,111 @@
 """
-Date parsing utilities.
+Date parsing utility for extracting dates from user messages.
 """
-from datetime import datetime, timedelta
-import re
-from typing import Optional, Tuple, Dict
+from typing import Dict, Optional, Tuple
+from datetime import datetime, date
 from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
+import re
 
 class DateParser:
-    """Date parsing utility class."""
+    """Utility class for parsing dates from text."""
     
-    RELATIVE_DATE_PATTERNS = {
-        r"today": lambda: datetime.now(),
-        r"tomorrow": lambda: datetime.now() + timedelta(days=1),
-        r"next week": lambda: datetime.now() + timedelta(weeks=1),
-        r"next month": lambda: datetime.now() + relativedelta(months=1),
-    }
-    
-    DATE_FORMATS = [
-        "%Y-%m-%d",
-        "%d/%m/%Y",
-        "%m/%d/%Y",
-        "%d-%m-%Y",
-        "%m-%d-%Y",
-        "%B %d, %Y",
-        "%d %B %Y",
-    ]
-    
-    @classmethod
-    def parse_date_range(cls, text: str) -> Tuple[Optional[datetime], Optional[datetime]]:
-        """Parse a date range from text."""
-        # Try to find relative dates first
-        for pattern, date_func in cls.RELATIVE_DATE_PATTERNS.items():
-            if re.search(pattern, text.lower()):
-                start_date = date_func()
-                # Assume one night stay if no end date specified
-                end_date = start_date + timedelta(days=1)
-                return start_date, end_date
+    @staticmethod
+    def extract_dates(text: str) -> Optional[Dict[str, date]]:
+        """
+        Extract check-in and check-out dates from text.
         
-        # Try to find explicit dates
+        Args:
+            text (str): Text containing date information
+            
+        Returns:
+            Optional[Dict[str, date]]: Dictionary with check_in and check_out dates,
+                                     or None if dates couldn't be extracted
+        """
+        # Common date formats
+        date_patterns = [
+            # DD/MM/YYYY or MM/DD/YYYY
+            r'(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
+            # YYYY-MM-DD
+            r'(\d{4}-\d{1,2}-\d{1,2})',
+            # Month DD, YYYY
+            r'([A-Za-z]+\s+\d{1,2},?\s+\d{4})',
+            # DD Month YYYY
+            r'(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
+            # Tomorrow, next week, etc.
+            r'(tomorrow|next week|next month)',
+            # X days/weeks from now
+            r'(\d+)\s+(day|week|month)s?\s+from\s+(?:now|today)',
+        ]
+        
         dates = []
-        words = text.split()
-        current_date_str = ""
+        text = text.lower()
         
-        for word in words:
-            current_date_str += f" {word}"
-            try:
-                date = parse(current_date_str.strip(), fuzzy=True)
-                dates.append(date)
-                current_date_str = ""
-            except ValueError:
-                continue
+        # Extract dates using patterns
+        for pattern in date_patterns:
+            matches = re.finditer(pattern, text)
+            for match in matches:
+                date_str = match.group(1)
+                try:
+                    # Handle relative dates
+                    if date_str == "tomorrow":
+                        parsed_date = datetime.now().date() + relativedelta(days=1)
+                    elif date_str == "next week":
+                        parsed_date = datetime.now().date() + relativedelta(weeks=1)
+                    elif date_str == "next month":
+                        parsed_date = datetime.now().date() + relativedelta(months=1)
+                    elif "from" in match.group(0):
+                        # Handle "X days/weeks from now"
+                        number = int(match.group(1))
+                        unit = match.group(2)
+                        if unit == "day":
+                            parsed_date = datetime.now().date() + relativedelta(days=number)
+                        elif unit == "week":
+                            parsed_date = datetime.now().date() + relativedelta(weeks=number)
+                        elif unit == "month":
+                            parsed_date = datetime.now().date() + relativedelta(months=number)
+                    else:
+                        # Parse absolute dates
+                        parsed_date = parse(date_str).date()
+                    
+                    dates.append(parsed_date)
+                except (ValueError, TypeError):
+                    continue
         
+        # Sort dates to determine check-in and check-out
         if len(dates) >= 2:
-            return dates[0], dates[1]
-        elif len(dates) == 1:
-            return dates[0], dates[0] + timedelta(days=1)
+            dates.sort()
+            return {
+                "check_in": dates[0],
+                "check_out": dates[1]
+            }
         
-        return None, None
+        return None
     
-    @classmethod
-    def format_date(cls, date: datetime, format: str = "%Y-%m-%d") -> str:
-        """Format a date as string."""
-        return date.strftime(format)
-    
-    @classmethod
-    def is_valid_date_range(
-        cls,
-        start_date: datetime,
-        end_date: datetime,
-        min_nights: int = 1,
-        max_nights: int = 30
-    ) -> Tuple[bool, str]:
-        """Validate a date range."""
-        now = datetime.now()
+    @staticmethod
+    def is_valid_date_range(check_in: date, check_out: date) -> Tuple[bool, str]:
+        """
+        Validate a date range for a hotel booking.
         
-        if start_date < now.replace(hour=0, minute=0, second=0, microsecond=0):
+        Args:
+            check_in (date): Check-in date
+            check_out (date): Check-out date
+            
+        Returns:
+            Tuple[bool, str]: (is_valid, error_message)
+        """
+        today = datetime.now().date()
+        
+        if check_in < today:
             return False, "Check-in date cannot be in the past"
         
-        if end_date <= start_date:
+        if check_out <= check_in:
             return False, "Check-out date must be after check-in date"
         
-        nights = (end_date - start_date).days
-        if nights < min_nights:
-            return False, f"Minimum stay is {min_nights} night(s)"
+        if (check_out - check_in).days > 30:
+            return False, "Maximum stay duration is 30 days"
         
-        if nights > max_nights:
-            return False, f"Maximum stay is {max_nights} nights"
+        if (check_in - today).days > 365:
+            return False, "Bookings can only be made up to 1 year in advance"
         
-        return True, ""
-    
-    @classmethod
-    def get_next_available_dates(
-        cls,
-        booked_dates: Dict[str, Tuple[datetime, datetime]],
-        desired_nights: int = 1,
-        start_from: Optional[datetime] = None
-    ) -> Tuple[datetime, datetime]:
-        """Find next available date range."""
-        if start_from is None:
-            start_from = datetime.now()
-        
-        # Sort booked dates
-        sorted_bookings = sorted(
-            booked_dates.values(),
-            key=lambda x: x[0]
-        )
-        
-        current_date = start_from
-        for booking_start, booking_end in sorted_bookings:
-            # If there's enough gap before this booking
-            if (booking_start - current_date).days >= desired_nights:
-                return current_date, current_date + timedelta(days=desired_nights)
-            current_date = booking_end
-        
-        # If we get here, return dates after all bookings
-        return current_date, current_date + timedelta(days=desired_nights) 
+        return True, "" 
